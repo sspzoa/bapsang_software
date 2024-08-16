@@ -7,7 +7,7 @@ output_layers = get_output_layers(net)
 
 cap = cv2.VideoCapture(0)
 
-current_direction = ""
+current_directions = {}
 
 def speak(text):
     subprocess.run(["say", text])
@@ -27,7 +27,7 @@ while True:
 
     indexes = cv2.dnn.NMSBoxes(boxes, confidences, CONFIDENCE_THRESHOLD, NMS_THRESHOLD)
 
-    current_direction = draw_predictions(frame, boxes, class_ids, indexes, width, height)
+    current_directions = draw_predictions(frame, boxes, class_ids, indexes, width, height, classes)
 
     cv2.imshow("Image", frame)
 
@@ -35,11 +35,19 @@ while True:
     if key == ord('q'):
         break
     elif key == ord('t'):
-        if current_direction:
-            number_only = extract_number(current_direction)
-            speak(f"사과가 {number_only}시 방향에 있습니다.")
+        speech_text = ""
+        for target_class in TARGET_CLASSES:
+            if target_class in current_directions and current_directions[target_class]:
+                directions = [extract_number(d) for d in current_directions[target_class]]
+                if len(directions) == 1:
+                    speech_text += f"{target_class}가 {directions[0]}시 방향에 있습니다. "
+                elif len(directions) > 1:
+                    speech_text += f"{target_class}가 {', '.join(directions[:-1])} 그리고 {directions[-1]}시 방향에 있습니다. "
+
+        if speech_text:
+            speak(speech_text)
         else:
-            speak("No apple detected")
+            speak("사과와 바나나가 감지되지 않았습니다.")
 
 cap.release()
 cv2.destroyAllWindows()
