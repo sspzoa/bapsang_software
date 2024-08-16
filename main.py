@@ -15,6 +15,11 @@ def speak(text):
 def extract_number(direction):
     return direction.split()[0]
 
+def translate_class(class_name):
+    if class_name == "apple":
+        return "사과"
+    return class_name
+
 while True:
     ret, frame = cap.read()
     height, width, channels = frame.shape
@@ -38,11 +43,12 @@ while True:
         speech_text = ""
         for target_class in TARGET_CLASSES:
             if target_class in current_directions and current_directions[target_class]:
+                translated_class = translate_class(target_class)
                 directions = [extract_number(d) for d in current_directions[target_class]]
                 if len(directions) == 1:
-                    speech_text += f"{target_class}가 {directions[0]}시 방향에 있습니다. "
+                    speech_text += f"{translated_class}가 {directions[0]}시 방향에 있습니다. "
                 elif len(directions) > 1:
-                    speech_text += f"{target_class}가 {', '.join(directions[:-1])} 그리고 {directions[-1]}시 방향에 있습니다. "
+                    speech_text += f"{translated_class}가 {', '.join(directions[:-1])} 그리고 {directions[-1]}시 방향에 있습니다. "
 
         if speech_text:
             speak(speech_text)
